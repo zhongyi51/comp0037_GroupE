@@ -25,7 +25,7 @@ path = planner.extractPathToGoal()
 
 # for task 1.1
 print('The planner is: ', type(planner).__name__)
-print('Number of cells visited: ', planner.getNumberOfCellsVisited())
+print('Number of cells to goal: ', planner.getNumberOfCellsVisited())
 print('Size of maximum queue: ', planner.getMaxLenOfQueue())
 print('Total travel cost of the optimal path: ', planner.getTotalTravelCost())
 print('Total angle turned for the optimal path: ', planner.getTotalAgle())

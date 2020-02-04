@@ -20,8 +20,8 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     def __init__(self, title, occupancyGrid):
         PlannerBase.__init__(self, title, occupancyGrid)
 
-        # Flag to store if the last plan was successful
         self.goalReached = None
+        self._goal = None # initiate for the algos that need to compute Euclidean distance
 
         # internal states for task 1.1
         self._numberOfCellsVisited = NOTSETUP
@@ -126,8 +126,8 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # cells in the search grid and the search algorithm is then run.
     def search(self, startCoords, goalCoords):
 
-        # Make sure the queue is empty. We do this so that we can keep calling
-        # the same method multiple times and have it work.
+        self._goal = goalCoords
+
         while (self.isQueueEmpty() == False):
             self.popCellFromQueue()
 
