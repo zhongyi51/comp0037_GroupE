@@ -43,7 +43,6 @@ class GreedyPlanner(CellBasedForwardSearch):
     class PriorityQueueByGoal(object):
         def __init__(self):
             self._queue = [] # list of (Euclidean distance, Cell) tuple pairs. eg. [(1, cellA),(3, cellB),(4, cellC), (12, cellD)]
-            self._lastPop = None # I expect this to be the source to be searched for other cells regarding the gfs_algo
 
         def pushByED(self, cell, goal_coords):
             def findDistance(cell, toCoords):
@@ -52,14 +51,11 @@ class GreedyPlanner(CellBasedForwardSearch):
                 x2, y2 = toCoords
                 return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
-            if self._lastPop == None: heapq.heappush(self._queue, (0, cell)); return # The first push case. This instr might be optimized later
-
             dist = findDistance(cell, goal_coords)
             heapq.heappush(self._queue, (dist, cell,))
 
         def pop(self):
             cell = heapq.heappop(self._queue)[CELL_POS]
-            self._lastPop = cell # ie. The next source cell
             return cell
 
         def __bool__(self):
