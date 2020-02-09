@@ -35,3 +35,6 @@ class Cell(object):
         # The initial path cost is infinite. For algorithms that need
         # it, this is the necessary initial condition.
         self.pathCost = float("inf")
+
+    def __repr__(self):
+        return str(self.coords)

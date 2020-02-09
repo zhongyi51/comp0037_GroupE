@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+from controller_record import ControllerRecord
 from geometry_msgs.msg  import Twist
 from geometry_msgs.msg  import Pose2D
 from std_msgs.msg import String
@@ -11,12 +12,13 @@ import math
 
 # This is the base class of the controller which moves the robot to its goal.
 
-class ControllerBase(object):
+class ControllerBase(ControllerRecord):
 
     def __init__(self, occupancyGrid):
 
         rospy.wait_for_message('/robot0/odom', Odometry)
 
+        ControllerRecord.__init__(self)
         # Create the node, publishers and subscriber
         self.velocityPublisher = rospy.Publisher('/robot0/cmd_vel', Twist, queue_size=10)
         self.currentOdometrySubscriber = rospy.Subscriber('/robot0/odom', Odometry, self.odometryCallback)
@@ -34,7 +36,7 @@ class ControllerBase(object):
         # Store the occupany grid - used to transform from cell
         # coordinates to world driving coordinates.
         self.occupancyGrid = occupancyGrid
-        
+
         # This is the rate at which we broadcast updates to the simulator in Hz.
         self.rate = rospy.Rate(10)
 
@@ -48,10 +50,13 @@ class ControllerBase(object):
 
         position = odometryPose.position
         orientation = odometryPose.orientation
-        
+
         pose.x = position.x
         pose.y = position.y
         pose.theta = 2 * atan2(orientation.z, orientation.w)
+
+        self.updateRecord((pose.x, pose.y,), pose.theta)
+        self.printRecord()
         self.pose = pose
 
     # Return the most up-to-date pose of the robot
@@ -73,7 +78,7 @@ class ControllerBase(object):
         self.plannerDrawer = plannerDrawer
 
         rospy.loginfo('Driving path to goal with ' + str(len(path.waypoints)) + ' waypoint(s)')
-        
+
         # Drive to each waypoint in turn
         for waypointNumber in range(0, len(path.waypoints)):
             cell = path.waypoints[waypointNumber]
@@ -85,8 +90,7 @@ class ControllerBase(object):
                 break
 
         rospy.loginfo('Rotating to goal orientation (' + str(goalOrientation) + ')')
-        
+
         # Finish off by rotating the robot to the final configuration
         if rospy.is_shutdown() is False:
             self.rotateToGoalOrientation(goalOrientation)
- 

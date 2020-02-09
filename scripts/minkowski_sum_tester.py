@@ -2,7 +2,10 @@
 
 from comp0037_planner_controller.occupancy_grid import OccupancyGrid
 from comp0037_planner_controller.fifo_planner import FIFOPlanner
+from comp0037_planner_controller.greedy_planner import GreedyPlanner
+from comp0037_planner_controller.dijkstra_planner import DijkstraPlanner
 
+FIFOPlanner = DijkstraPlanner # retarded testing REMEMBER TO DELETE IT !!!!!!!!
 # Create the occupancy grid
 occupancyGrid = OccupancyGrid(21, 21, 0.5)
 
@@ -42,4 +45,3 @@ planner.setRunInteractively(True)
 planner.setWindowHeightInPixels(400)
 planner.search(start, goal)
 path = planner.extractPathToGoal()
-

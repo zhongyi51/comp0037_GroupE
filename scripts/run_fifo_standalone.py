@@ -12,7 +12,7 @@ occupancyGrid = OccupancyGrid(21, 21, 0.5)
 # Set the state of the cells in the range [11,1]-[11,19] to be occupied.
 # This corresponds to the "easy case" in the lectures
 
-for y in xrange(1, 19):
+for y in xrange(0, 19):
     occupancyGrid.setCell(11, y, 1)
 
 # Start and goal cells

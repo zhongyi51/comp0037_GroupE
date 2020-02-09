@@ -7,8 +7,8 @@ from cell import *
 class CellBasedForwardSearch(GeneralForwardSearchAlgorithm):
 
     # This implements the logic for doing a forward search for an environment which consists of a set of goals.
-    
-    
+
+
     def __init__(self, title, occupancyGrid):
         GeneralForwardSearchAlgorithm.__init__(self, title, occupancyGrid)
 
@@ -26,10 +26,7 @@ class CellBasedForwardSearch(GeneralForwardSearchAlgorithm):
         # This stores the set of valid actions / cells
         cells = list()
 
-        # Go through all the neighbours and add the cells if they
-        # don't fall outside the grid and they aren't the cell we
-        # started with. The order has been manually written down to
-        # create a spiral.
+        # # flood fill original
         self.pushBackCandidateCellIfValid(cell, cells, 0, -1)
         self.pushBackCandidateCellIfValid(cell, cells, 1, -1)
         self.pushBackCandidateCellIfValid(cell, cells, 1, 0)
@@ -38,6 +35,13 @@ class CellBasedForwardSearch(GeneralForwardSearchAlgorithm):
         self.pushBackCandidateCellIfValid(cell, cells, -1, 1)
         self.pushBackCandidateCellIfValid(cell, cells, -1, 0)
         self.pushBackCandidateCellIfValid(cell, cells, -1, -1)
+
+        # compare different flood fill search visiting
+        # for x,y in [(1,1),(1,0), (1,-1), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1), ]:
+        #     self.pushBackCandidateCellIfValid(cell, cells, x,y)
+
+        # for x,y in [(1,0), (1,-1), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1), (1,1)]:
+        #     self.pushBackCandidateCellIfValid(cell, cells, x,y)
 
         return cells
 

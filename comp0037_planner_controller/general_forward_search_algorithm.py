@@ -21,7 +21,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         PlannerBase.__init__(self, title, occupancyGrid)
 
         self.goalReached = None
-        self._goal = None # initiate for the algos that need to compute Euclidean distance
+        self.goal = None # a coords such as (x, y)
 
         # internal states for task 1.1
         self._numberOfCellsVisited = NOTSETUP
@@ -82,6 +82,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     def markCellAsVisitedAndRecordParent(self, cell, parentCell):
         cell.label = CellLabel.ALIVE
         cell.parent = parentCell
+        if parentCell:
+            cell.pathCost = parentCell.pathCost + self.computeLStageAdditiveCost(parentCell, cell) # add for cost based search algos and task 1.1
+
 
     # Mark that a cell is dead. A dead cell is one in which all of its
     # immediate neighbours have been visited.
@@ -125,9 +128,6 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # set of coordinates. These are then converted into start and destination
     # cells in the search grid and the search algorithm is then run.
     def search(self, startCoords, goalCoords):
-
-        self._goal = goalCoords
-
         while (self.isQueueEmpty() == False):
             self.popCellFromQueue()
 
@@ -176,6 +176,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
                 return False
 
             cell = self.popCellFromQueue()
+            # print "Current Cell: ", cell.coords, cell.pathCost # debug del
             if (self.hasGoalBeenReached(cell) == True):
                 self.goalReached = True
                 break
@@ -236,6 +237,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             path.waypoints.appendleft(cell)
             path.travelCost = path.travelCost + self.computeLStageAdditiveCost(cell.parent, cell)
             # self._totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
+            # print cell.coords # debug del
             cell = cell.parent
 
         # Update the stats on the size of the path
