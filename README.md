@@ -1,3 +1,3 @@
-The scripts under dir: $ws/src/comp0037/comp0037_planner_controller/scripts/ .
+I found the task 2.2 requires the implementation of Astar algo (along with some others for inheritances), so I did my version of AStar for the Euclidean heauristic for now. For how to use, see the readme inside them.
 
-Replace the scripts in comp0037_planner_controller/ folder first, then replace the scripts in the ../scripts folder as well,then use the command `rosrun comp0037_planner_controller run_standalone.py` for bash testing.
+If any other implementations are done already, simply removes all my files and upload yours in the master, I put them in the Michael branch as well so no worry.
