@@ -27,6 +27,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         self._numberOfCellsVisited = NOTSETUP
         self._totalTravelCost = NOTSETUP
         self._totalAngleTurned = NOTSETUP
+	self._direction=-1 #default direction of robot is "not record"
 
     # These methods manage the queue of cells to be visied.
     def pushCellOntoQueue(self, cell):
@@ -121,8 +122,35 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
     # TODO: implement this for task 1.1
     def computeAngleTurned(self, parentCell, cell):
-        # I am not too sure how this turned angle is defined, I will ask the lecturer next time
-        return
+
+        if (parentCell is None):
+            return 0
+
+        dX = cell.coords[0] - parentCell.coords[0]
+        dY = cell.coords[1] - parentCell.coords[1]	
+	
+	newdirection=0;
+
+	if dX>0 and dY>0: newdirection=45
+	elif dX>0 and dY<0: newdirection=-45
+	elif dX>0 and dY==0: newdirection=0
+	elif dX==0 and dY>0: newdirection=90
+	elif dX==0 and dY<0: newdirection=-90
+	elif dX==0 and dY==0: newdirection=-1
+	elif dX<0 and dY>0: newdirection=135
+	elif dX<0 and dY<0: newdirection=-135
+	elif dX<0 and dY==0: newdirection=180
+	
+	turned_angle=abs(newdirection-self._direction)
+	if turned_angle>180:
+		turned_angle=360-turned_angle
+	
+	if self._direction==-1:
+	    self._direction=newdirection
+	    return 0
+	else: self._direction=newdirection
+
+        return turned_angle
 
     # The main search routine. The routine searches for a path between a given
     # set of coordinates. These are then converted into start and destination
@@ -236,7 +264,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         while (cell is not None):
             path.waypoints.appendleft(cell)
             path.travelCost = path.travelCost + self.computeLStageAdditiveCost(cell.parent, cell)
-            # self._totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
+            self._totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
             # print cell.coords # debug del
             cell = cell.parent
 
@@ -251,6 +279,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         self._totalTravelCost = path.travelCost # for task 1.1
         print "Path travel cost = " + str(path.travelCost)
         print "Path cardinality = " + str(path.numberOfWaypoints)
+	print "Angle Turned = " + str(self._totalAngleTurned)
 
         # Draw the path if requested
         if (self.showGraphics == True):
