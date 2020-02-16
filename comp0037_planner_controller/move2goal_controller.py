@@ -17,13 +17,13 @@ class Move2GoalController(ControllerBase):
 
     def __init__(self, occupancyGrid):
         ControllerBase.__init__(self, occupancyGrid)
-        
+
         # Get the proportional gain settings
         self.distanceErrorGain = rospy.get_param('distance_error_gain', 1)
         self.angleErrorGain = rospy.get_param('angle_error_gain', 4)
 
         self.driveAngleErrorTolerance = math.radians(rospy.get_param('angle_error_tolerance', 1))
-    
+
     def get_distance(self, goal_x, goal_y):
         distance = sqrt(pow((goal_x - self.pose.x), 2) + pow((goal_y - self.pose.y), 2))
         return distance
@@ -35,7 +35,7 @@ class Move2GoalController(ControllerBase):
         elif(delta > math.pi):
             delta = delta - 2.0*math.pi
         return delta
-        
+
     def driveToWaypoint(self, waypoint):
         vel_msg = Twist()
 
@@ -43,16 +43,18 @@ class Move2GoalController(ControllerBase):
         dY = waypoint[1] - self.pose.y
         distanceError = sqrt(dX * dX + dY * dY)
         angleError = self.shortestAngularDistance(self.pose.theta, atan2(dY, dX))
-       
+
         while (distanceError >= self.distanceErrorTolerance) & (not rospy.is_shutdown()):
             #print("Current Pose: x: {}, y:{} , theta: {}\nGoal: x: {}, y: {}\n".format(self.pose.x, self.pose.y,
             #                                                                           self.pose.theta, waypoint[0],
             #                                                                           waypoint[1]))
-            print("Distance Error: {}\nAngular Error: {}".format(distanceError, angleError))
+            # print("Distance Error: {}\nAngular Error: {}".format(distanceError, angleError)) #test del
 
             # Proportional Controller
             # linear velocity in the x-axis: only switch on when the angular error is sufficiently small
             if math.fabs(angleError) < self.driveAngleErrorTolerance:
+                # print 'My expected velocity is {}, my Gain is {}, my distance Error is {} \n'.\
+                # format(self.distanceErrorGain * distanceError, self.distanceErrorGain,distanceError) # debug del
                 vel_msg.linear.x = max(0.0, min(self.distanceErrorGain * distanceError, 10.0))
                 vel_msg.linear.y = 0
                 vel_msg.linear.z = 0
@@ -68,7 +70,7 @@ class Move2GoalController(ControllerBase):
             self.velocityPublisher.publish(vel_msg)
             if (self.plannerDrawer is not None):
                 self.plannerDrawer.flushAndUpdateWindow()
-                
+
             self.rate.sleep()
 
             distanceError = sqrt(pow((waypoint[0] - self.pose.x), 2) + pow((waypoint[1] - self.pose.y), 2))
@@ -99,11 +101,10 @@ class Move2GoalController(ControllerBase):
             self.velocityPublisher.publish(vel_msg)
             if (self.plannerDrawer is not None):
                 self.plannerDrawer.flushAndUpdateWindow()
-                
+
             self.rate.sleep()
             angleError = self.shortestAngularDistance(self.pose.theta, goalOrientation)
 
         # Stop movement once finished
         vel_msg.angular.z = 0
         self.velocityPublisher.publish(vel_msg)
-        

@@ -29,8 +29,12 @@ class ControllerRecord(object):
                 self._theta_pre = theta
                 self._time_pre = self._time_start = rospy.get_time()
                 self._initialFlag = True
+                print 'FIRST SETUP DONE, CURRENT STATUS IS {} {} {}'.format(self._pos_pre, self._theta_pre, self._time_pre) # debug del
             else:
                 raise e
 
+    # though it uses print() at the moment, remember to replace to rospy.log() for worth storing info !!!
     def printRecord(self):
-        print("Total Distance: {}, Total Angle Turned: {}, Runtime: {}".format(self._distanceTravelled, self._angleTurned, self._timePassed))
+        print 'CURRENT STATUS IS {} {} {}'.format(self._pos_pre, self._theta_pre, self._time_pre) # debug del
+        print "Total Distance: {}, Total Angle Turned: {}, Runtime: {}".format(self._distanceTravelled, self._angleTurned, self._timePassed)
+        print ''

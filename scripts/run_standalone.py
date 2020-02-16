@@ -6,16 +6,17 @@ from comp0037_planner_controller.fifo_planner import FIFOPlanner
 from comp0037_planner_controller.lifo_planner import LIFOPlanner
 from comp0037_planner_controller.greedy_planner import GreedyPlanner
 from comp0037_planner_controller.greedy_rewiring_planner import GreedyRewiringPlanner
-from comp0037_planner_controller.astar_planner import AStarPlanner
-from comp0037_planner_controller.astar_manhattan_planner import AStarPlanner_Manhattan
-from comp0037_planner_controller.stupid_planner import RandomPlanner
-from comp0037_planner_controller.astar_squared_euclidean_planner import AStarPlanner_Squared_Euclidean
-from comp0037_planner_controller.astar_none_negative_planner import AStarPlanner_None_Negative
-from comp0037_planner_controller.astar_octile_distance_planner import AStarPlanner_Octile_Distance
+
+from comp0037_planner_controller.astar_by_C_planner import AStarByCPlanner
+from comp0037_planner_controller.astar_by_ED_planner import AStarByEDPlanner
+from comp0037_planner_controller.astar_by_OD_planner import AStarByODPlanner
+from comp0037_planner_controller.astar_by_MD_planner import AStarByMDPlanner
+from comp0037_planner_controller.astar_by_SED_planner import AStarBySEDPlanner
 
 
 
-Planners = (FIFOPlanner, LIFOPlanner, GreedyPlanner, GreedyRewiringPlanner, DijkstraPlanner, AStarPlanner,RandomPlanner,AStarPlanner_Manhattan,AStarPlanner_Squared_Euclidean,AStarPlanner_None_Negative,AStarPlanner_Octile_Distance) # append planners here for testing
+Planners = (FIFOPlanner, LIFOPlanner, GreedyPlanner, GreedyRewiringPlanner, DijkstraPlanner, AStarByCPlanner,
+            AStarByEDPlanner, AStarByODPlanner, AStarByMDPlanner,AStarBySEDPlanner) # append planners here for testing
 
 occupancyGrid = OccupancyGrid(21, 21, 0.5)
 for y in xrange(0, 20): # set block cell positions here
@@ -33,6 +34,7 @@ for Planner in Planners:
         planner.setRunInteractively(True) # hold the drawing by the last case
     planner.setWindowHeightInPixels(400)
     goalReached = planner.search(start, goal)
+
     # print out infomation
     path = planner.extractPathToGoal()
     print 'Size of maximum queue: ', planner.getMaxLenOfQueue()

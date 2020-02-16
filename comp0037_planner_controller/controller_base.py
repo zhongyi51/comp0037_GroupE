@@ -56,7 +56,7 @@ class ControllerBase(ControllerRecord):
         pose.theta = 2 * atan2(orientation.z, orientation.w)
 
         self.updateRecord((pose.x, pose.y,), pose.theta)
-        self.printRecord()
+        self.printRecord() # report, important !!!
         self.pose = pose
 
     # Return the most up-to-date pose of the robot

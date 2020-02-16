@@ -17,26 +17,36 @@ from comp0037_planner_controller.srv import *
 from comp0037_planner_controller.occupancy_grid import OccupancyGrid
 
 # The planner used to figure out the path
+from comp0037_planner_controller.dijkstra_planner import DijkstraPlanner
 from comp0037_planner_controller.fifo_planner import FIFOPlanner
+from comp0037_planner_controller.lifo_planner import LIFOPlanner
+from comp0037_planner_controller.greedy_planner import GreedyPlanner
+from comp0037_planner_controller.greedy_rewiring_planner import GreedyRewiringPlanner
+from comp0037_planner_controller.astar_by_C_planner import AStarByCPlanner
+from comp0037_planner_controller.astar_by_ED_planner import AStarByEDPlanner
+from comp0037_planner_controller.astar_by_OD_planner import AStarByODPlanner
+from comp0037_planner_controller.astar_by_MD_planner import AStarByMDPlanner
 
 # The controller to drive the robot along the path
 from comp0037_planner_controller.move2goal_controller import Move2GoalController
 
-# This class interfaces with the planner and the controller
+
+PLANNER = AStarByEDPlanner
+
 class PlannerControllerNode(object):
 
     def __init__(self):
         rospy.init_node('planner_controller', anonymous=True)
-        
+
         self.waitForGoal =  threading.Condition()
         self.waitForDriveCompleted =  threading.Condition()
         self.goal = None
         pass
-    
+
     def createOccupancyGridFromMapServer(self):
         # Get the map service
         rospy.loginfo('Waiting for static_map to become available.')
-        rospy.wait_for_service('static_map') 
+        rospy.wait_for_service('static_map')
         self.mapServer = rospy.ServiceProxy('static_map', GetMap)
         rospy.loginfo('Found static_map; requesting map data')
 
@@ -52,10 +62,10 @@ class PlannerControllerNode(object):
         self.occupancyGrid.expandObstaclesToAccountForCircularRobotOfRadius(0.2)
 
     def createPlanner(self):
-        self.planner = FIFOPlanner('FIFO', self.occupancyGrid)
+        self.planner = PLANNER(PLANNER.__name__, self.occupancyGrid)
         self.planner.setPauseTime(0)
         self.planner.windowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 700)
-        
+
     def createRobotController(self):
         self.robotController = Move2GoalController(self.occupancyGrid)
 
@@ -84,7 +94,7 @@ class PlannerControllerNode(object):
 
         print "start = " + str(start)
         print "goal = " + str(goal)
-        
+
         # Call the planner
         startCellCoords = self.occupancyGrid.getCellCoordinatesFromWorldCoordinates(start)
         goalCellCoords = self.occupancyGrid.getCellCoordinatesFromWorldCoordinates((goal.x,goal.y))
@@ -108,7 +118,7 @@ class PlannerControllerNode(object):
             rospy.logwarn("Could not reach the goal at (%d, %d); moving to next goal", \
                           goalCellCoords[0], goalCellCoords[1])
             return False
-        
+
         # Extract the path
         path = self.planner.extractPathToGoal()
 
@@ -116,7 +126,7 @@ class PlannerControllerNode(object):
         self.robotController.drivePathToGoal(path, goal.theta, self.planner.getPlannerDrawer())
 
         return True
-    
+
     def run(self):
 
         # First set up the occupancy grid
@@ -124,7 +134,7 @@ class PlannerControllerNode(object):
 
         # Create the planner
         self.createPlanner()
-        
+
         # Set up the robot controller
         self.createRobotController()
 
@@ -136,7 +146,7 @@ class PlannerControllerNode(object):
         service = rospy.Service('drive_to_goal', Goal, self.handleDriveToGoal)
 
         print 'Spinning to service goal requests'
-        
+
         while not rospy.is_shutdown():
 
             # Wait for a new goal. Allow at most 0.1s, which gives
