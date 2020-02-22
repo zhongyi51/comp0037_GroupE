@@ -6,8 +6,9 @@ from greedy_rewiring_planner import GreedyRewiringPlanner
 
 class AStarByEDPlanner(GreedyRewiringPlanner): # or think about inherite from dijkstra if you feel like that is more natural
 
-    def __init__(self, title, occupancyGrid):
+    def __init__(self, title, occupancyGrid,scale):
         GreedyRewiringPlanner.__init__(self, title, occupancyGrid)
+	self.scale=scale
 
     # @OVERRIDE: override GreedyPlanner.pushCellOntoQueue
     def pushCellOntoQueue(self, cell):
@@ -26,6 +27,6 @@ class AStarByEDPlanner(GreedyRewiringPlanner): # or think about inherite from di
 
         c = fromCell.pathCost
         g = self.computeLStageAdditiveCost(fromCell, toCell)
-        l = c + g
+        l = c + g*self.scale
 
         return l

@@ -11,12 +11,12 @@ from comp0037_planner_controller.astar_by_C_planner import AStarByCPlanner
 from comp0037_planner_controller.astar_by_ED_planner import AStarByEDPlanner
 from comp0037_planner_controller.astar_by_OD_planner import AStarByODPlanner
 from comp0037_planner_controller.astar_by_MD_planner import AStarByMDPlanner
-from comp0037_planner_controller.astar_by_ED_planner import AStarByEDPlanner
+from comp0037_planner_controller.astar_by_SED_planner import AStarBySEDPlanner
 
 
 
 Planners = (FIFOPlanner, LIFOPlanner, GreedyPlanner, GreedyRewiringPlanner, DijkstraPlanner, AStarByCPlanner,
-            AStarByEDPlanner, AStarByODPlanner, AStarByMDPlanner) # append planners here for testing
+            AStarByEDPlanner, AStarByODPlanner, AStarByMDPlanner,AStarBySEDPlanner) # append planners here for testing
 
 occupancyGrid = OccupancyGrid(21, 21, 0.5)
 for y in xrange(0, 20): # set block cell positions here
