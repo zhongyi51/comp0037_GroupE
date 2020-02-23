@@ -78,6 +78,7 @@ class ControllerBase(ControllerRecord):
         self.plannerDrawer = plannerDrawer
 
         rospy.loginfo('Driving path to goal with ' + str(len(path.waypoints)) + ' waypoint(s)')
+	
 
         # Drive to each waypoint in turn
         for waypointNumber in range(0, len(path.waypoints)):

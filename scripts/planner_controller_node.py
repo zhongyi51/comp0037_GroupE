@@ -31,7 +31,7 @@ from comp0037_planner_controller.astar_by_MD_planner import AStarByMDPlanner
 from comp0037_planner_controller.move2goal_controller import Move2GoalController
 
 
-PLANNER = AStarByEDPlanner
+PLANNER = DijkstraPlanner
 
 class PlannerControllerNode(object):
 
@@ -121,6 +121,7 @@ class PlannerControllerNode(object):
 
         # Extract the path
         path = self.planner.extractPathToGoal()
+
 
         # Now drive it
         self.robotController.drivePathToGoal(path, goal.theta, self.planner.getPlannerDrawer())

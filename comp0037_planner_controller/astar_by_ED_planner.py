@@ -6,7 +6,7 @@ from greedy_rewiring_planner import GreedyRewiringPlanner
 
 class AStarByEDPlanner(GreedyRewiringPlanner): # or think about inherite from dijkstra if you feel like that is more natural
 
-    def __init__(self, title, occupancyGrid,scale):
+    def __init__(self, title, occupancyGrid,scale=1):
         GreedyRewiringPlanner.__init__(self, title, occupancyGrid)
 	self.scale=scale
 
