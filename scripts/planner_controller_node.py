@@ -31,7 +31,7 @@ from comp0037_planner_controller.astar_by_MD_planner import AStarByMDPlanner
 from comp0037_planner_controller.move2goal_controller import Move2GoalController
 
 
-PLANNER = AStarByEDPlanner
+PLANNER = AStarByMDPlanner
 
 class PlannerControllerNode(object):
 

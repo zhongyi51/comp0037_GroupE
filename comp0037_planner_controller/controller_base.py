@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rospy
+import rospy, time, math, os
 from controller_record import ControllerRecord
 from geometry_msgs.msg  import Twist
 from geometry_msgs.msg  import Pose2D
@@ -7,11 +7,15 @@ from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from math import pow,atan2,sqrt,pi
 from planned_path import PlannedPath
-import time
-import math
+from subprocess import Popen, call
 
-# This is the base class of the controller which moves the robot to its goal.
+# for saving the travelling summary infomation for analysis
+timestr = time.strftime("%Y%m%d-%H%M%S")
+call("[ ! -d {0} ] &&  mkdir {0}".format('/home/ros_user/datasave_assignment1/'), shell=True)
+DRIVE_TO_GOAL_STATUS_SUMMARY_SAVEFILE = '/home/ros_user/datasave_assignment1/AstarByMD_FactoryTerrain_Summary_{}.txt'.format(timestr)
+del timestr
 
+# This is the base class of the controller which moves the robot to its goal
 class ControllerBase(ControllerRecord):
 
     def __init__(self, occupancyGrid):
@@ -54,10 +58,10 @@ class ControllerBase(ControllerRecord):
         pose.x = position.x
         pose.y = position.y
         pose.theta = 2 * atan2(orientation.z, orientation.w)
-
-        self.updateRecord((pose.x, pose.y,), pose.theta)
-        self.printRecord() # report, important !!!
         self.pose = pose
+
+        self.updateRecord(pose)
+        self.printRecord() # report, important !!!
 
     # Return the most up-to-date pose of the robot
     def getCurrentPose(self):
@@ -77,12 +81,14 @@ class ControllerBase(ControllerRecord):
     def drivePathToGoal(self, path, goalOrientation, plannerDrawer):
         self.plannerDrawer = plannerDrawer
 
-        rospy.loginfo('Driving path to goal with ' + str(len(path.waypoints)) + ' waypoint(s)')
+        goal = str(path.waypoints[-1].coords) # myMod: assume last waypoints is the goal. DEBUG: can consider to del
+        rospy.loginfo('Driving path to goal cell %s with '%goal + str(len(path.waypoints)) + ' waypoint(s)')
+        self.reset() # myMod: clean up the pre-setup status errors
 
         # Drive to each waypoint in turn
         for waypointNumber in range(0, len(path.waypoints)):
             cell = path.waypoints[waypointNumber]
-            waypoint = self.occupancyGrid.getWorldCoordinatesFromCellCoordinates(cell.coords)
+            waypoint = self.occupancyGrid.getWorldCoordinatesFromCellCoordinates(cell.coords) # convert cell coords to a real world coords
             rospy.loginfo("Driving to waypoint (%f, %f)", waypoint[0], waypoint[1])
             self.driveToWaypoint(waypoint)
             # Handle ^C
@@ -90,6 +96,7 @@ class ControllerBase(ControllerRecord):
                 break
 
         rospy.loginfo('Rotating to goal orientation (' + str(goalOrientation) + ')')
+        self.redirect_current_status_to_file(DRIVE_TO_GOAL_STATUS_SUMMARY_SAVEFILE, last_waypoint = str(waypoint))
 
         # Finish off by rotating the robot to the final configuration
         if rospy.is_shutdown() is False:
