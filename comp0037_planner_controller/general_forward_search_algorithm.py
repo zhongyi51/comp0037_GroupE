@@ -127,8 +127,8 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             return 0
 
         dX = cell.coords[0] - parentCell.coords[0]
-        dY = cell.coords[1] - parentCell.coords[1]	
-	
+        dY = cell.coords[1] - parentCell.coords[1]
+
 	newdirection=0;
 
 	if dX>0 and dY>0: newdirection=45
@@ -140,11 +140,11 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 	elif dX<0 and dY>0: newdirection=135
 	elif dX<0 and dY<0: newdirection=-135
 	elif dX<0 and dY==0: newdirection=180
-	
+
 	turned_angle=abs(newdirection-self._direction)
 	if turned_angle>180:
 		turned_angle=360-turned_angle
-	
+
 	if self._direction==-1:
 	    self._direction=newdirection
 	    return 0
@@ -256,7 +256,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         # Start at the goal and find the parent. Find the cost associated with the parent
         cell = pathEndCell.parent
         path.travelCost = self.computeLStageAdditiveCost(pathEndCell.parent, pathEndCell)
-        self._totalAngleTurned = self.computeAngleTurned(pathEndCell.parent, pathEndCell) # for task 1.1
+        path.totalAngleTurned = self.computeAngleTurned(pathEndCell.parent, pathEndCell) # for task 1.1
+        path.maxLenOfQueue = self.getMaxLenOfQueue() # for task 1.1
+        path.numberOfCellsVisited = self._numberOfCellsVisited
 
         # Iterate back through and extract each parent in turn and add
         # it to the path. To work out the travel length along the
@@ -264,7 +266,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         while (cell is not None):
             path.waypoints.appendleft(cell)
             path.travelCost = path.travelCost + self.computeLStageAdditiveCost(cell.parent, cell)
-            self._totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
+            path.totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
             # print cell.coords # debug del
             cell = cell.parent
 
@@ -279,7 +281,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         self._totalTravelCost = path.travelCost # for task 1.1
         print "Path travel cost = " + str(path.travelCost)
         print "Path cardinality = " + str(path.numberOfWaypoints)
-	print "Angle Turned = " + str(self._totalAngleTurned)
+	print "Angle Turned = " + str(path.totalAngleTurned)
+        print "Maximum Queue Size =" + str(path.maxLenOfQueue)
+        print "numberOfCellsVisited =" + str(path.numberOfCellsVisited)
 
         # Draw the path if requested
         if (self.showGraphics == True):

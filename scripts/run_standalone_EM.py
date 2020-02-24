@@ -20,7 +20,7 @@ AStarPlanners = (AStarByCPlanner, AStarByODPlanner, AStarByMDPlanner,AStarBySEDP
 
 occupancyGrid = OccupancyGrid(21, 21, 0.5)
 
-mapindex=input()
+mapindex = int(input('Put a number in 0 ~ 3 range: '))
 
 if mapindex==0:#empty map
 	start = (2, 18)
@@ -48,7 +48,7 @@ elif mapindex==2:
 	    occupancyGrid.setCell(17, y, 1)
 	for y in xrange(2, 17): # set block cell positions here
 	    occupancyGrid.setCell(y, 19, 1)
-	
+
 	occupancyGrid.setCell(17,10,0)
 
 	start = (0, 0)
@@ -71,7 +71,7 @@ elif mapindex==3:
 	    occupancyGrid.setCell(y, 17, 1)
 	for y in xrange(0, 14): # set block cell positions here
 	    occupancyGrid.setCell(19, y, 1)
-	
+
 	occupancyGrid.setCell(17,10,0)
 	occupancyGrid.setCell(2,17,0)
 	occupancyGrid.setCell(8,18,0)
@@ -93,7 +93,6 @@ for Planner in Planners:
 
     # print out infomation
     path = planner.extractPathToGoal()
-    print 'Size of maximum queue: ', planner.getMaxLenOfQueue()
     print '\n'
 
 for Planner in AStarPlanners:
@@ -105,7 +104,6 @@ for Planner in AStarPlanners:
 
     # print out infomation
     path = planner.extractPathToGoal()
-    print 'Size of maximum queue: ', planner.getMaxLenOfQueue()
     print '\n'
 
 Planner=AStarByEDPlanner
@@ -123,11 +121,4 @@ for scale in [0.3,1,3]:
 
     # print out infomation
     path = planner.extractPathToGoal()
-    print 'Size of maximum queue: ', planner.getMaxLenOfQueue()
     print '\n'
-# # for task 1.1, some may be not needed
-# print 'The planner is: ', type(planner).__name__
-# print 'Number of cells to reach goal: ', planner.getNumberOfCellsVisited()
-# print 'Size of maximum queue: ', planner.getMaxLenOfQueue()
-# print 'Total travel cost of the optimal path: ', planner.getTotalTravelCost()
-# print 'Total angle turned for the optimal path: ', planner.getTotalAgle()

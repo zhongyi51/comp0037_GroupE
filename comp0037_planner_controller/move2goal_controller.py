@@ -82,42 +82,6 @@ class Move2GoalController(ControllerBase):
         vel_msg.angular.z = 0
         self.velocityPublisher.publish(vel_msg)
 
-    #override
-    def drivePathToGoal(self, path, goalOrientation, plannerDrawer):
-	    self.plannerDrawer = plannerDrawer
-
-	    rospy.loginfo('Driving path to goal with ' + str(len(path.waypoints)) + ' waypoint(s)')
-
-	
-
-	    # Drive to each waypoint in turn
-	    pre_waypoint=[-1,-1]
-	    pre_delta=[0,0]
-	    for waypointNumber in range(0, len(path.waypoints)):
-	        cell = path.waypoints[waypointNumber]
-	    	
-	        waypoint = self.occupancyGrid.getWorldCoordinatesFromCellCoordinates(cell.coords)
-	        delta=[waypoint[0]-pre_waypoint[0],waypoint[1]-pre_waypoint[1]]
-	        rospy.loginfo("Current waypoint is:"+str(waypoint)+"  Previous waypoint is:"+str(pre_waypoint))
-	        if delta==pre_delta:
-	            pre_waypoint=waypoint[:]
-		    rospy.loginfo("Delta unchanged: (%f, %f)", delta[0], delta[1])
-		else:
-		    rospy.loginfo("Driving to waypoint (%f, %f)", waypoint[0], waypoint[1])
-		    self.driveToWaypoint(waypoint)
-		    pre_waypoint=waypoint[:]	
-		    pre_delta=delta[:]
-		# Handle ^C
-		if rospy.is_shutdown() is True:
-		    break
-
-	    rospy.loginfo('Rotating to goal orientation (' + str(goalOrientation) + ')')
-	    rospy.loginfo('Driving path to goal with ' + str(path.waypoints))	
-
-	    # Finish off by rotating the robot to the final configuration
-	    if rospy.is_shutdown() is False:
-	        self.rotateToGoalOrientation(goalOrientation)
-
     def rotateToGoalOrientation(self, goalOrientation):
         vel_msg = Twist()
 

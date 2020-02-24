@@ -9,17 +9,25 @@ from planned_path import PlannedPath
 from math import *
 import rospy
 
+NOTSETUP = -1
+
 class GeneralForwardSearchAlgorithm(PlannerBase):
 
     # This class implements the basic framework for LaValle's general
     # template for forward search. It includes a lot of methods for
     # managing the graphical output as well.
-    
+
     def __init__(self, title, occupancyGrid):
         PlannerBase.__init__(self, title, occupancyGrid)
-         
-        # Flag to store if the last plan was successful
+
         self.goalReached = None
+        self.goal = None # a coords such as (x, y)
+
+        # internal states for task 1.1
+        self._numberOfCellsVisited = NOTSETUP
+        self._totalTravelCost = NOTSETUP
+        self._totalAngleTurned = NOTSETUP
+	self._direction=-1 #default direction of robot is "not record"
 
     # These methods manage the queue of cells to be visied.
     def pushCellOntoQueue(self, cell):
@@ -47,53 +55,110 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     def hasCellBeenVisitedAlready(self, cell):
         raise NotImplementedError()
 
+    # my adding for task 1.1
+    def getNumberOfCellsVisited(self):
+        if self._numberOfCellsVisited == NOTSETUP:
+            raise AttributeError('Please use search() method to search once first.')
+        return self._numberOfCellsVisited
+
+    def getMaxLenOfQueue(self):
+        raise NotImplementedError()
+
+    def getTotalTravelCost(self):
+        if not self.goalReached:
+            raise AttributeError('No reachable goal yet, please search for a valid goal first')
+        elif self._totalTravelCost == NOTSETUP:
+            self.extractPathToGoal() # initialize attribute states for task 1.1
+        return self._totalTravelCost
+
+    def getTotalAgle(self):
+        # if not self.goalReached:
+        #     raise AttributeError('No reachable goal yet, please search for a valid goal first')
+        # elif self._totalAngleTurned == NOTSETUP:
+        #     self.extractPathToGoal() # initialize attribute states for task 1.1
+        # return self._totalAngleTurned
+        pass
+
+
     def markCellAsVisitedAndRecordParent(self, cell, parentCell):
         cell.label = CellLabel.ALIVE
         cell.parent = parentCell
+        if parentCell:
+            cell.pathCost = parentCell.pathCost + self.computeLStageAdditiveCost(parentCell, cell) # add for cost based search algos and task 1.1
+
 
     # Mark that a cell is dead. A dead cell is one in which all of its
     # immediate neighbours have been visited.
     def markCellAsDead(self, cell):
         cell.label = CellLabel.DEAD
-    
+
     # Handle the case that a cell has been visited already.
     def resolveDuplicate(self, cell):
         raise NotImplementedError()
-    
+
     # Compute the additive cost of performing a step from the parent to the
     # current cell. This calculation is carried out the same way no matter
     # what heuristics, etc. are used. The cost computed here takes account
     # of the terrain traversability cost using an equation a bit like that
     # presented in the lectures.
-    def computeLStageAdditiveCost(self, parentCell, cell):       
+    def computeLStageAdditiveCost(self, parentCell, cell):
         # If the parent is empty, this is the start of the path and the
         # cost is 0.
         if (parentCell is None):
             return 0
-        
+
         # Travel cost is Cartesian distance
         dX = cell.coords[0] - parentCell.coords[0]
         dY = cell.coords[1] - parentCell.coords[1]
-        # Terrain cost 
+        # Terrain cost
         #  Run this in matlab to visualise ro check the image
         # However, basically it builds up extremely quickly
         # x=[1:0.01:2];
-        # c=min(1+(.2./((1.7-x).^2)).^2,1000);       
+        # c=min(1+(.2./((1.7-x).^2)).^2,1000);
         cost=min(1+(0.2/((1.75-cell.terrainCost)**2))**2, 1000)
         L = sqrt(dX * dX + dY * dY)*cost# Multiplied by the terrain cost of the cell
-        
+
         return L
-        
+
+    # TODO: implement this for task 1.1
+    def computeAngleTurned(self, parentCell, cell):
+
+        if (parentCell is None):
+            return 0
+
+        dX = cell.coords[0] - parentCell.coords[0]
+        dY = cell.coords[1] - parentCell.coords[1]	
+	
+	newdirection=0;
+
+	if dX>0 and dY>0: newdirection=45
+	elif dX>0 and dY<0: newdirection=-45
+	elif dX>0 and dY==0: newdirection=0
+	elif dX==0 and dY>0: newdirection=90
+	elif dX==0 and dY<0: newdirection=-90
+	elif dX==0 and dY==0: newdirection=-1
+	elif dX<0 and dY>0: newdirection=135
+	elif dX<0 and dY<0: newdirection=-135
+	elif dX<0 and dY==0: newdirection=180
+	
+	turned_angle=abs(newdirection-self._direction)
+	if turned_angle>180:
+		turned_angle=360-turned_angle
+	
+	if self._direction==-1:
+	    self._direction=newdirection
+	    return 0
+	else: self._direction=newdirection
+
+        return turned_angle
+
     # The main search routine. The routine searches for a path between a given
     # set of coordinates. These are then converted into start and destination
     # cells in the search grid and the search algorithm is then run.
     def search(self, startCoords, goalCoords):
-
-        # Make sure the queue is empty. We do this so that we can keep calling
-        # the same method multiple times and have it work.
         while (self.isQueueEmpty() == False):
             self.popCellFromQueue()
-        
+
         # Create or update the search grid from the occupancy grid and seed
         # unvisited and occupied cells.
         if (self.searchGrid is None):
@@ -123,7 +188,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         self.pushCellOntoQueue(self.start)
 
         # Reset the count
-        self.numberOfCellsVisited = 0
+        self._numberOfCellsVisited = 0
 
         # Indicates if we reached the goal or not
         self.goalReached = False
@@ -137,8 +202,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             # planner from hanging.
             if rospy.is_shutdown():
                 return False
-            
+
             cell = self.popCellFromQueue()
+            # print "Current Cell: ", cell.coords, cell.pathCost # debug del
             if (self.hasGoalBeenReached(cell) == True):
                 self.goalReached = True
                 break
@@ -147,7 +213,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
                 if (self.hasCellBeenVisitedAlready(nextCell) == False):
                     self.markCellAsVisitedAndRecordParent(nextCell, cell)
                     self.pushCellOntoQueue(nextCell)
-                    self.numberOfCellsVisited = self.numberOfCellsVisited + 1
+                    self._numberOfCellsVisited = self._numberOfCellsVisited + 1
                 else:
                     self.resolveDuplicate(nextCell, cell)
 
@@ -160,9 +226,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
         # Do a final draw to make sure that the graphics are shown, even at the end state
         self.drawCurrentState()
-        
-        print "numberOfCellsVisited = " + str(self.numberOfCellsVisited)
-        
+
+        print "numberOfCellsVisited = " + str(self._numberOfCellsVisited)
+
         if self.goalReached:
             print "Goal reached"
         else:
@@ -181,41 +247,46 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
         # Construct the path object and mark if the goal was reached
         path = PlannedPath()
-        
+
         path.goalReached = self.goalReached
-        
+
         # Initial condition - the goal cell
         path.waypoints.append(pathEndCell)
-               
+
         # Start at the goal and find the parent. Find the cost associated with the parent
         cell = pathEndCell.parent
         path.travelCost = self.computeLStageAdditiveCost(pathEndCell.parent, pathEndCell)
-        
+        self._totalAngleTurned = self.computeAngleTurned(pathEndCell.parent, pathEndCell) # for task 1.1
+
         # Iterate back through and extract each parent in turn and add
         # it to the path. To work out the travel length along the
         # path, you'll also have to add self at self stage.
         while (cell is not None):
             path.waypoints.appendleft(cell)
             path.travelCost = path.travelCost + self.computeLStageAdditiveCost(cell.parent, cell)
+            self._totalAngleTurned += self.computeAngleTurned(cell.parent, cell) # for task 1.1
+            # print cell.coords # debug del
             cell = cell.parent
-            
+
         # Update the stats on the size of the path
-        path.numberOfWaypoints = len(path.waypoints)
+        self._numberOfCellsVisited = path.numberOfWaypoints = len(path.waypoints) # for task 1.1
 
         # Note that if we failed to reach the goal, the above mechanism computes a path length of 0.
         # Therefore, if we didn't reach the goal, change it to infinity
         if path.goalReached is False:
             path.travelCost = float("inf")
 
+        self._totalTravelCost = path.travelCost # for task 1.1
         print "Path travel cost = " + str(path.travelCost)
         print "Path cardinality = " + str(path.numberOfWaypoints)
-        
+	print "Angle Turned = " + str(self._totalAngleTurned)
+
         # Draw the path if requested
         if (self.showGraphics == True):
             self.plannerDrawer.update()
             self.plannerDrawer.drawPathGraphicsWithCustomColour(path, colour)
             self.plannerDrawer.waitForKeyPress()
-        
+
         # Return the path
         return path
 
@@ -229,6 +300,5 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # Extract the path between the start and goal.
     def extractPathToGoal(self):
         path = self.extractPathEndingAtCell(self.goal, 'yellow')
-       
+
         return path
-            

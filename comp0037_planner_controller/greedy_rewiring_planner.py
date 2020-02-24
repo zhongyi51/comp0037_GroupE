@@ -9,7 +9,6 @@ class GreedyRewiringPlanner(GreedyPlanner):
     def __init__(self, title, occupancyGrid):
         GreedyPlanner.__init__(self, title, occupancyGrid)
 
-    # @OVERRIDE: a slightly modified version from dijkstra to make it 'cleverer'
     def resolveDuplicate(self, cell, parentCell):
         newCost = parentCell.pathCost + self.computeLStageAdditiveCost(parentCell, cell)
         if cell.pathCost > newCost:
