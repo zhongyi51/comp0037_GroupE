@@ -12,19 +12,17 @@ class PriorityQueueByCost(object):
     def enqueue(self, cell, cmpCell = None, costEvalFunc = None):
         if costEvalFunc:
             cost = costEvalFunc(cell, cmpCell)
-            # print "enqueueing {} to queue {}, cost is {}\n".format(cell, self._queue, cost) # debug del
             heapq.heappush(self._queue, [cost, cell,])
 
         else:
             raise TypeError("I expect a cost evaluation is defined for using this .*ByCost class")
 
-    def pop(self): #sorry for using the wrong name, possibly fix it to dequeue later
+    def pop(self):
         cell = heapq.heappop(self._queue)[CELL_POS]
-        # print "dequeueing {} to queue {}\n".format(cell, self._queue) # debug del
         return cell
 
     def updateCostOfCell(self, cost, cell):  # for updating the queue after the resolving the resolveDuplicate. assume the cell has to be in the queue
-        for i in range(len(self._queue)): # sequential search. Try binary search etc. if have time
+        for i in range(len(self._queue)):
             cell_local = self._queue[i][CELL_POS]
             if cell_local == cell:
                 self._queue[i][COST_POS] = cost

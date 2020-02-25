@@ -1,1 +1,1 @@
-The latest codes merged with the last master. The fix one logical bug which makes the robot skip thegoal at a straight line from our improvement of speed control. The logging functionality is the one used to generate results for our report.
+Dijkstra has been fixed. And the logging is the lastest, same as the one used in report. I guess this is the final version of codes for the assignment.
